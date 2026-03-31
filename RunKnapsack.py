@@ -314,7 +314,7 @@ for tau in setup_Sat:
             else:
                 target = (1.0 - (tau-1.0))*nom_val
                 
-            x_opt, opt_val = gror.robustSatisficing(dataset = train_sets[i], f_target = target, opt_inst = opt_instance, uncert_indices = np.arange(opt_instance.n))
+            x_opt, opt_val = gror.runRobustSatisficing(dataset = train_sets[i], f_target = target, opt_inst = opt_instance, uncert_indices = np.arange(opt_instance.n))
             end = time.time()
             runtime = end-start
             
@@ -427,7 +427,7 @@ for p in setup_GARO:
         instance_counter+=1
         for i in range(num_data_instances):
             start = time.time() 
-            x_opt, opt_val = gror.runRobustGlobalRegret(dataset = train_sets[i], p=p, opt_inst = opt_instance, uncert_indices = np.arange(opt_instance.n))
+            x_opt, opt_val = gror.runGARO(dataset = train_sets[i], p=p, opt_inst = opt_instance, uncert_indices = np.arange(opt_instance.n))
             end = time.time()
             runtime = end-start
             

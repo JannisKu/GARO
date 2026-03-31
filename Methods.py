@@ -40,7 +40,6 @@ class Ellipsoid:
         
         #If eigenvalue is zero add epsilon to diagonal of covariance matrix
         cov_matrix = np.cov(dataset,rowvar = False)
-        #cov_matrix = np.identity(self.n)
         eigenval, eigenvec = np.linalg.eigh(cov_matrix)
         if abs(eigenval[0])<0.0001:
             print("Added epsilon to diagonal, since eigenvalue too close to zero.")
@@ -51,7 +50,6 @@ class Ellipsoid:
         
         self.inv_matrix = np.linalg.inv(self.matrix)
         
-        #self.gamma = chi2.ppf(confidence_level, df = self.n)
         self.gamma = self.getGamma(confidence_level)
         
         
@@ -102,15 +100,10 @@ def runRobustOptimization(dataset: npt.NDArray[np.float64], num_clusters: int, c
        
     
     # start algorithm
-    #plot2DEllipsoid(ellipsoids = ellipsoids)
-    
-
     model = gp.Model("Classical_RO")
     model.setParam("OutputFlag",0)
-    model.setParam('OptimalityTol', 1e-4)  # or higher
-    #model.setParam('BarConvTol', 1e-6)     # if using barrier method
-    #model.setParam('FeasibilityTol', 1e-6)
-    #model.setParam("TimeLimit", timeLimit)
+    model.setParam('OptimalityTol', 1e-4)  
+
     # Create variables
 
     z = model.addVar(lb = -GRB.INFINITY, vtype=GRB.CONTINUOUS, name="z")
@@ -205,10 +198,7 @@ def minMaxEllipsoid(ellipsoid: Ellipsoid, opt_inst: OptimizationInstance, uncert
 
     model = gp.Model("MinMaxEllipsoid")
     model.setParam("OutputFlag",0)
-    model.setParam('OptimalityTol', 1e-4)  # or higher
-    #model.setParam('BarConvTol', 1e-6)     # if using barrier method
-    #model.setParam('FeasibilityTol', 1e-6)
-    #model.setParam("TimeLimit", timeLimit)
+    model.setParam('OptimalityTol', 1e-4)
     # Create variables
 
     z = model.addVar(lb = -GRB.INFINITY, vtype=GRB.CONTINUOUS, name="z")
@@ -220,7 +210,6 @@ def minMaxEllipsoid(ellipsoid: Ellipsoid, opt_inst: OptimizationInstance, uncert
         x = model.addVars(n, lb = opt_inst.lb, ub = opt_inst.ub, vtype=GRB.CONTINUOUS, name = "x")
     
         
-    #print("mu:",ellipsoid.mean)
     if ellipsoid.gamma == 0:
         non_neg_scen = False
     if non_neg_scen:
@@ -269,7 +258,6 @@ def minMaxEllipsoid(ellipsoid: Ellipsoid, opt_inst: OptimizationInstance, uncert
     
     print("Solve Classic RO Problem. Gamma=",ellipsoid.gamma)
     model.optimize()
-    #model.write("Classical_RO.lp")
     
     if model.status == GRB.OPTIMAL:
         print("Optimal solution found.")
@@ -308,15 +296,11 @@ def runRobustOptimizationScenarios(dataset: npt.NDArray[np.float64], num_cluster
         
        
     # start algorithm
-    #plot2DEllipsoid(ellipsoids = ellipsoids)
     
 
     model = gp.Model("Classical_RO_Scenarios")
     model.setParam("OutputFlag",0)
-    model.setParam('OptimalityTol', 1e-4)  # or higher
-    #model.setParam('BarConvTol', 1e-6)     # if using barrier method
-    #model.setParam('FeasibilityTol', 1e-6)
-    #model.setParam("TimeLimit", timeLimit)
+    model.setParam('OptimalityTol', 1e-4)
     # Create variables
 
     z = model.addVar(lb = -GRB.INFINITY, vtype=GRB.CONTINUOUS, name="z")
@@ -365,7 +349,6 @@ def runRobustOptimizationScenarios(dataset: npt.NDArray[np.float64], num_cluster
        
     print("Solve Classic Scenario RO Problem. Confidence=",confidence_level)
     model.optimize()
-    #model.write("Classical_Scenario_RO.lp")
     
     if model.status == GRB.OPTIMAL:
         print("Optimal solution found.")
@@ -403,15 +386,12 @@ def runClassicalRegret(dataset: npt.NDArray[np.float64], num_clusters: int, gamm
     ellipsoid.gamma = gamma_val
 
     # start algorithm
-    #plot2DEllipsoid(ellipsoids = ellipsoids)
     
 
     model = gp.Model("Classical_Regret")
     model.setParam("OutputFlag",0)
     model.setParam('OptimalityTol', 1e-4)
-    #model.setParam('BarConvTol', 1e-6)     # if using barrier method
-    #model.setParam('FeasibilityTol', 1e-6)
-    #model.setParam("TimeLimit", timeLimit)
+    
     # Create variables
 
     z = model.addVar(lb = -GRB.INFINITY, vtype=GRB.CONTINUOUS, name="z")
@@ -460,7 +440,6 @@ def runClassicalRegret(dataset: npt.NDArray[np.float64], num_clusters: int, gamm
 
     print("Solve Classic Regret Problem. Gamma=", gamma_val)
     model.optimize()
-    #model.write("Classical_Scenario_RO.lp")
     
     if model.status == GRB.OPTIMAL:
         print("Optimal solution found.")
@@ -492,7 +471,6 @@ def runDeterministicProblem(c: npt.NDArray[np.float64],opt_inst: OptimizationIns
     
     model = gp.Model("Deterministic_Problem")
     model.setParam("OutputFlag",0)
-    #model.setParam("TimeLimit", timeLimit)
     # Create variables
     
     if opt_inst.integer_vars:
@@ -537,17 +515,15 @@ def runDeterministicProblem(c: npt.NDArray[np.float64],opt_inst: OptimizationIns
     
 
 
-def runRobustGlobalRegret(dataset: npt.NDArray[np.float64], p: float, opt_inst: OptimizationInstance, uncert_indices: list) -> npt.NDArray[np.float64] | float:
+def runGARO(dataset: npt.NDArray[np.float64], p: float, opt_inst: OptimizationInstance, uncert_indices: list) -> npt.NDArray[np.float64] | float:
     print("Solve Robust Global Regret Problem: p=",p)
     
-    #works for the case where the variables with uncertain coefficients in the objective function (uncert_indices) are the only ones
+    #uncert_indices works for the case where the variables with uncertain coefficients in the objective function (uncert_indices) are the only ones
     #appearing in the objective function and all other variables are only appearing in the constraints.
     
     n = opt_inst.n
     m = opt_inst.A.shape[0]
     q = len(uncert_indices)
-    
-    #Gamma = chi2.ppf(0.99, df = n)
     
     ellipsoid = Ellipsoid(dataset = dataset, confidence_level = 0.99)
     
@@ -567,10 +543,7 @@ def runRobustGlobalRegret(dataset: npt.NDArray[np.float64], p: float, opt_inst: 
     eps = 0.0005
     model = gp.Model("Global_Regret_RO")
     model.setParam("OutputFlag",0)
-    model.setParam('OptimalityTol', 1e-4) # or higher
-    #model.setParam('BarConvTol', 1e-6)     # if using barrier method
-    #model.setParam('FeasibilityTol', 1e-6)
-    #model.setParam("TimeLimit", 600)
+    model.setParam('OptimalityTol', 1e-4)
     # Create variables
 
     alpha = model.addVar(vtype=GRB.CONTINUOUS, name="alpha")
@@ -638,7 +611,7 @@ def runRobustGlobalRegret(dataset: npt.NDArray[np.float64], p: float, opt_inst: 
 
 
 
-def robustSatisficing(dataset: npt.NDArray[np.float64], f_target: float, opt_inst: OptimizationInstance, uncert_indices: list) -> npt.NDArray[np.float64] | float:
+def runRobustSatisficing(dataset: npt.NDArray[np.float64], f_target: float, opt_inst: OptimizationInstance, uncert_indices: list) -> npt.NDArray[np.float64] | float:
     print("Solve Robust Satisficing for: f_target=",f_target)
     
     n = opt_inst.n
@@ -656,10 +629,8 @@ def robustSatisficing(dataset: npt.NDArray[np.float64], f_target: float, opt_ins
     eps = 0.0005
     model = gp.Model("Robust Satisficing")
     model.setParam("OutputFlag",0)
-    model.setParam('OptimalityTol', 1e-4)  # or higher
-    #model.setParam('BarConvTol', 1e-6)     # if using barrier method
-    #model.setParam('FeasibilityTol', 1e-6)
-    #model.setParam("TimeLimit", 600)
+    model.setParam('OptimalityTol', 1e-4)  
+    
     # Create variables
 
     alpha = model.addVar(vtype=GRB.CONTINUOUS, name="alpha")
@@ -699,7 +670,6 @@ def robustSatisficing(dataset: npt.NDArray[np.float64], f_target: float, opt_ins
         
     
     model.optimize()
-    #model.write("Satisficing.lp")
     if model.status == GRB.OPTIMAL:
         x_opt = np.array(list(model.getAttr("X",x).values()))
         alpha_opt =  alpha.x
@@ -752,7 +722,6 @@ def generateGaussianData(dim: int, num_points: int, small: bool) -> npt.NDArray[
     mean = 25*np.random.rand(dim)
     onb = ortho_group.rvs(dim=dim)
     
-    #sigma = np.power(0.1*np.random.rand(dim)*mean/math.sqrt(chi2.ppf(0.95, df = dim)),2*np.ones(dim))
     
     sigma = np.power(np.random.rand(dim)*0.25*mean,2*np.ones(dim))
 
@@ -774,7 +743,6 @@ def generateGaussianContrary(dim: int, num_points: int, small: bool) -> npt.NDAr
     mean = 50*np.random.rand(dim)
     onb = ortho_group.rvs(dim=dim)
     
-    #sigma = np.power(0.1*np.random.rand(dim)*mean/math.sqrt(chi2.ppf(0.95, df = dim)),2*np.ones(dim))
     
     sigma = np.power(np.random.rand(dim)*(50-mean),2*np.ones(dim))
 
