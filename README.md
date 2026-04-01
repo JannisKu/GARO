@@ -101,9 +101,9 @@ Execute the file RunKnapsack.py. The setup can be adjusted in the first lines:
 | `dataType` | String for data distribution |
 | `num_data_instances` | Number of random sample sets executed |
 | `num_opt_instances` | Number of random knapsack instances executed |
-| setup_RO | List of values $\tau$ for RO|
-| setup_RO_d | List of values $\tau$ for RO$_d$ |
-| setup_REG | List of values $\tau$ for REG |
+| setup_RO | List of values $\theta$ for RO|
+| setup_RO_d | List of values $\theta$ for RO$_d$ |
+| setup_REG | List of values $\theta$ for REG |
 | setup_GARO | List of values $q$ for GARO |
 | setup_Sat | List of values $\beta$ for SAT |
 
