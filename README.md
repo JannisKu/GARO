@@ -1,6 +1,6 @@
 # Weber Facility Location Example
 
-This folder contains the Julia code and LaTeX source for the facility location (Weber problem) figures in:
+The folder Example contains the Julia code and LaTeX source for the facility location (Weber problem) figures in:
 
 > Jannis Kurtz & Bart P.G. van Parys, *Globalized Adversarial Regret Optimization: Making Decisions beyond Classical Predictions* (2026).
 
@@ -68,3 +68,53 @@ The problem data (support set, nominal distribution, Wasserstein radius, true di
 | `regret_mean` | Regret-optimal mean: Chebyshev center of the set of attainable means |
 | `sat_mean` | Satisficing mean (Long, 2023): minimises the slope of a linear cost guarantee |
 | `glob_robust_mean` | GARO mean: minimises adversarial regret uniformly over all perturbation levels |
+
+# Experiment: Knapsack Problem
+
+The folder `Experiment` contains the Python code for the Knapsack experiments in Section 6 of the following paper:
+
+> Jannis Kurtz & Bart P.G. van Parys, *Globalized Adversarial Regret Optimization: Making Decisions beyond Classical Predictions* (2026).
+
+## Problem data
+
+The problem data for each type of distribution can be found in the corresponding subfolders (Gaussian, Gaussian Inverse, Heavy Tail). The files corresponding to the problem instances are:
+
+| File | Contents |
+|------|----------|
+| `data_train_i.csv` | List of training samples for data instance i |
+| `data_test_i.csv` | List of test samples for data instance i |
+| `Instances.csv` | Contains information about the knapsack instance in consecutive rows: (ID,Knapsack weights, Knapsack capacity, Sense of the knapsack constraint, Variable lower bounds, variable upper bounds, Flag integer variables, flag maximization problem)  |
+| `boxplot_data.pkl` | Results for the out-of-sample performance. The file contains the following items: "label" (name of the method), "values" (list of out-of-sample objective values), "runtimes" (list of all runtimes)  |
+| `guarantee_data.pkl` | Contains the values of the guarantee plots. The file contains the following items: "label" (name of the method), "gamma" (gamma values for x-axis), "y" (guarantee values for y-axis), "test_data" (gamma values for the test-samples) |
+
+
+## Run the Python code
+
+Execute the file RunKnapsack.py. The setup can be adjusted in the first lines:
+
+| Variable | Explanation |
+|------|----------|
+| `num_points` | Number of samples which are then split in 80/20 training/test samples. |
+| `dim` | Dimension of the knapsack problem. |
+| `integer_vars` | Integer knapsack problem is used true/false |
+| `maximization_prob` | Maximization problem is used true/false (should not be set to `true` without changing the constraint sense for the knapsack problem since minimum knapsack problem is considered) |
+| `dataType` | String for data distribution |
+| `num_data_instances` | Number of random sample sets executed |
+| `num_opt_instances` | Number of random knapsack instances executed |
+| setup_RO | List of values $\tau$ for RO|
+| setup_RO_d | List of values $\tau$ for RO$_d$ |
+| setup_REG | List of values $\tau$ for REG |
+| setup_GARO | List of values $q$ for GARO |
+| setup_Sat | List of values $\beta$ for SAT |
+
+In the file Methods.py the solution methods for the optimization models can be found:
+
+| Method | Explanation |
+|------|----------|
+| `minMaxEllipsoid` | RO |
+| `runRobustOptimizationScenarios` | RO$_d$ |
+| `runRobustSatisficing` | SAT |
+| `runClassicalRegret` | REG |
+| `runGARO` | GARO |
+
+
