@@ -1,0 +1,143 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{spy}
+
+\usepackage[margin=2cm]{geometry}
+
+\begin{document}
+
+\begin{figure}[h]
+  \centering
+\begin{tikzpicture}[spy using outlines={circle, magnification=4.5, size=5cm, connect spies}]
+\begin{axis}[
+  width=11cm,
+  height=8cm,
+  view={60}{60},
+  axis lines=middle,
+  zmin=0,
+  zmax=1,
+  xmin=0,
+  xmax=2.4,
+  ymin=0,
+  ymax=1.8,
+  xtick={0, 1, 2},
+  ytick={0, 0.5, 1, 1.5},
+  zticklabels=\empty,
+  y tick label style={
+    xshift=0pt,
+    yshift=3pt,
+    anchor=base
+  },
+  ylabel style={
+    at={(axis description cs:0.83,0.72)},
+    rotate=0,
+    anchor=center
+  },
+  clip=true
+  ]
+
+  \foreach \x in {0,0.5,...,2.4} {
+    \addplot3[forget plot, black!20, thin] coordinates {(\x,0,0) (\x,1.8,0)};
+  }
+  \foreach \y in {0,0.5,...,1.8} {
+    \addplot3[forget plot, black!20, thin] coordinates {(0,\y,0) (2.4,\y,0)};
+  }
+
+  \addplot3 [draw=black, fill=black!15, opacity=0.5]
+    table [x=xi_1,y=xi_2,z expr=0, col sep=comma] {julia/csv/ch-Xi.csv} --cycle;
+
+  \addplot3 [draw=orange, fill=orange, only marks, mark size=0.1pt]
+    table [x=xi_1,y=xi_2,z expr=0, col sep=comma] {julia/csv/mean.csv};
+
+  \addplot3 [draw=black, fill=black, only marks, mark size=0.1pt, mark=*]
+    table [x=xi_1,y=xi_2,z expr=0, col sep=comma] {julia/csv/robust_mean.csv};
+
+  \addplot3 [draw=blue, fill=blue, only marks, mark size=0.1pt, mark=*]
+    table [x=xi_1,y=xi_2,z expr=0, col sep=comma] {julia/csv/min-ball-M_r.csv};
+
+  \addplot3 [forget plot, draw=black, fill=black, only marks, mark size=0.1pt]
+    table [x=xi_1,y=xi_2,z expr=0, col sep=comma] {julia/csv/instance.csv};
+
+  \addplot3[forget plot, draw=red, thick,
+    quiver={u=0, v=0, w=\thisrow{P}},
+    -stealth]
+    table[x=xi_1, y=xi_2, z=zero, col sep=comma] {julia/csv/instance.csv};
+
+  \addplot3 [draw=blue, fill=blue!10, opacity=0.5]
+    table [x=xi_1,y=xi_2,z expr=0, col sep=comma] {julia/csv/M_r.csv} --cycle;
+
+  \addplot3 [draw=black!50, line width=0.2pt]
+    table [x=xi_1,y=xi_2,z expr=0, col sep=comma] {julia/csv/robust_hubs.csv};
+  \addplot3 [draw=blue!50, line width=0.2pt]
+    table [x=xi_1,y=xi_2,z expr=0, col sep=comma] {julia/csv/regret_hubs.csv};
+
+  \addplot3 [draw=yellow, fill=yellow, only marks, mark size=0.1pt]
+    table [x=xi_1,y=xi_2,z expr=0, col sep=comma] {julia/csv/sat_mean.csv};
+  \addplot3 [draw=green, fill=green, only marks, mark size=0.5pt, mark=star]
+    table [x=xi_1,y=xi_2,z expr=0, col sep=comma] {julia/csv/glob_robust_mean.csv};
+
+  \addplot3 [forget plot, draw=blue, densely dotted, thick]
+    table [x=xi_1,y=xi_2,z=P, col sep=comma] {julia/csv/circle2.csv} --cycle;
+
+\end{axis}
+\spy on (5.58,2.7) in node [left] at (-1,2.5);
+\end{tikzpicture}
+  \caption{Facility location instance: customer locations $\Xi$ (red marks) with predicted distribution $\mathbf{P}_0$ (red arrows). The path of robust hub locations $\{\mu_{rob}(\gamma)\}_{\gamma\geq 0}$ (gray) moves from the nominal location $\mu_{nom}$ (orange) to $\mathrm{ctr}(\Xi)$ (black) as $\gamma_0$ grows. The set $M(\gamma_0)$ of attainable means under $\mathcal{P}_{\gamma_0}$ (blue shaded polytope) and the regret-optimal location $\mu_{reg}=\mathrm{ctr}(M(\gamma_0))$ (blue dot) are also shown, together with the satisficing location $\mu_{sat}$ (yellow) and the GARO solution $\mu_{garo}$ (green star).}
+  \label{fig:weber-instance}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[h]
+    \centering
+\begin{tikzpicture}[spy using outlines={circle, magnification=3, size=4cm, connect spies}]
+\begin{axis}[
+  tick label style={/pgf/number format/fixed},
+  width=15cm,
+  height=8cm,
+  axis lines=middle,
+  title={Adversarial Regret $A(\cdot, {\gamma})$},
+  xmin=0,
+  ymin=0,
+  ymax=0.07,
+  xmax=1.2,
+  legend pos=south east,
+  legend cell align={left},
+  ]
+
+  \addplot [draw=orange] table [x=gamma,y=nom,col sep=comma] {julia/csv/costs.csv};
+  \addlegendentry{$\mu_{nom}$}
+
+  \addplot [draw=black] table [x=gamma,y=rob,col sep=comma] {julia/csv/costs.csv};
+  \addlegendentry{$\mu_{rob}$}
+
+  \addplot [draw=blue] table [x=gamma,y=reg,col sep=comma] {julia/csv/costs.csv};
+  \addlegendentry{$\mu_{reg}$}
+
+  \addplot [draw=yellow] table [x=gamma,y=sat,col sep=comma] {julia/csv/costs.csv};
+  \addlegendentry{$\mu_{sat}$}
+
+  \addplot [draw=green] table [x=gamma,y=grob,col sep=comma] {julia/csv/costs.csv};
+  \addlegendentry{$\mu_{garo}$}
+
+  \draw [densely dotted] (axis cs:1, 0) -- (axis cs:1, 0.2);
+  \node [above right] at (axis cs:1,0.045) {$\gamma_0$};
+
+  \draw [densely dotted] (axis cs:0.1, 0) -- (axis cs:0.1, 0.2);
+  \node [above right] at (axis cs:0.1,0.045) {$\gamma'_0$};
+
+  \addplot [draw=green, densely dotted]
+    table [x=gamma,y=guarantee_garo,col sep=comma] {julia/csv/costs.csv};
+  \addlegendentry{$\alpha_{garo}$}
+
+\end{axis}
+\end{tikzpicture}
+    \caption{Adversarial regret $A(\cdot,\gamma)$ as a function of the Wasserstein perturbation level $\gamma$ for the five hub locations shown in Figure~\ref{fig:weber-instance}. The regret-optimal location $\mu_{reg}$ (blue) is so optimistic that its adversarial regret exceeds that of the nominal location $\mu_{nom}$ (orange) for all $\gamma\geq 0$. The robust location $\mu_{rob}$ (black) achieves zero adversarial regret at $\gamma_0$. The GARO location $\mu_{garo}$ (green) maintains uniformly small adversarial regret across all $\gamma$, bounded by the guarantee $\alpha_{garo}$ (dotted green line).}
+    \label{fig:weber-costs}
+\end{figure}
+
+\end{document}
